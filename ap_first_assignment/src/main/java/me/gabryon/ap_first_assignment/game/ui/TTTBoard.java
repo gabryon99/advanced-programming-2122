@@ -1,5 +1,6 @@
 package me.gabryon.ap_first_assignment.game.ui;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,10 +14,9 @@ import me.gabryon.ap_first_assignment.game.ui.listeners.GameEndListener;
 import me.gabryon.ap_first_assignment.game.ui.listeners.GameRestartListener;
 
 /**
- *
- * @author gabryon
+ * Main class containing cells to play TicTacToe.
  */
-public class TTTBoard extends javax.swing.JFrame {
+public class TTTBoard extends javax.swing.JFrame implements CellStateChangeListener {
 
     /**
      * @param args the command line arguments
@@ -28,12 +28,7 @@ public class TTTBoard extends javax.swing.JFrame {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
+            javax.swing.UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(TTTBoard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -47,14 +42,11 @@ public class TTTBoard extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            
             var board = new TTTBoard();
-            
-            board.initializeControllerAndBoard();
             board.setVisible(true);
         });
     }
-  
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -79,6 +71,8 @@ public class TTTBoard extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("TicTacToe");
+        setAlwaysOnTop(true);
+        setBackground(new java.awt.Color(11, 9, 10));
         setResizable(false);
 
         cellContainer.setPreferredSize(new java.awt.Dimension(400, 400));
@@ -131,8 +125,8 @@ public class TTTBoard extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        btnRestart.setBackground(new java.awt.Color(255, 51, 51));
-        btnRestart.setForeground(new java.awt.Color(0, 0, 0));
+        btnRestart.setBackground(new java.awt.Color(186, 24, 27));
+        btnRestart.setForeground(new java.awt.Color(255, 255, 255));
         btnRestart.setText("Restart");
         btnRestart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -140,7 +134,7 @@ public class TTTBoard extends javax.swing.JFrame {
             }
         });
 
-        tttController.setText("START GAME");
+        tttController.setText("{CURRENT_STATE_LABEL}");
         tttController.setToolTipText("");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -155,7 +149,7 @@ public class TTTBoard extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addComponent(tttController, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 113, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                         .addComponent(btnRestart, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -177,8 +171,8 @@ public class TTTBoard extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRestartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestartActionPerformed
-        Object[] listeners = gameRestartEventListenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2)  {
+        var listeners = gameEventListenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == GameRestartListener.class) {
                 ((GameRestartListener) listeners[i + 1]).onGameRestart();
             }
@@ -200,59 +194,67 @@ public class TTTBoard extends javax.swing.JFrame {
     private me.gabryon.ap_first_assignment.game.ui.TTTController tttController;
     // End of variables declaration//GEN-END:variables
 
-    private final EventListenerList gameEndEventListenerList = new EventListenerList();
-    private final EventListenerList gameRestartEventListenerList = new EventListenerList();
-
-    /***
-     * The listener will invoke the ending game conditions when a cell state changes!
-     */
-    private final CellStateChangeListener cellStateChangeListener = (evt) -> {
-        checkEndGame();
-    };
-    
+    private final EventListenerList gameEventListenerList = new EventListenerList();
     private final ArrayList<List<TTTCell>> winningConditions;
-    
+
     /**
      * Creates new form TTTBoard
      */
     public TTTBoard() {
+
         initComponents();
-        
-        winningConditions = new ArrayList<>() {{
+        initializeControllerAndBoard();
+        tttController.refreshStateMessage();
 
-            add(Arrays.asList(cell00, cell01, cell02)); /* First row */
-            add(Arrays.asList(cell10, cell11, cell12)); /* Second row */
-            add(Arrays.asList(cell20, cell21, cell22)); /* Third row */
+        winningConditions = new ArrayList<>() {
+            {
 
-            add(Arrays.asList(cell00, cell10, cell20)); /* First column */
-            add(Arrays.asList(cell01, cell11, cell21)); /* Second column */
-            add(Arrays.asList(cell02, cell12, cell22)); /* Third column */
+                /* First row */
+                add(Arrays.asList(cell00, cell01, cell02));
+                /* Second row */
+                add(Arrays.asList(cell10, cell11, cell12));
+                /* Third row */
+                add(Arrays.asList(cell20, cell21, cell22));
 
-            add(Arrays.asList(cell00, cell11, cell22)); /* First diagonal */
-            add(Arrays.asList(cell12, cell11, cell20)); /* Second diagonal */
+                /* First column */
+                add(Arrays.asList(cell00, cell10, cell20));
+                /* Second column */
+                add(Arrays.asList(cell01, cell11, cell21));
+                /* Third column */
+                add(Arrays.asList(cell02, cell12, cell22));
 
-        }};
+                /* First diagonal */
+                add(Arrays.asList(cell00, cell11, cell22));
+                /* Second diagonal */
+                add(Arrays.asList(cell02, cell11, cell20));
+            }
+        };
     }
 
     public void addGameEndListener(GameEndListener listener) {
-        gameEndEventListenerList.add(GameEndListener.class, listener);
+        gameEventListenerList.add(GameEndListener.class, listener);
     }
-    
+
     public void removeGameEndListener(GameEndListener listener) {
-        gameEndEventListenerList.remove(GameEndListener.class, listener);
+        gameEventListenerList.remove(GameEndListener.class, listener);
     }
-    
+
     public void addGameRestartListener(GameRestartListener listener) {
-        gameRestartEventListenerList.add(GameRestartListener.class, listener);
+        gameEventListenerList.add(GameRestartListener.class, listener);
     }
-    
+
     public void removeGameRestartListener(GameRestartListener listener) {
-        gameRestartEventListenerList.remove(GameRestartListener.class, listener);
+        gameEventListenerList.remove(GameRestartListener.class, listener);
     }
-    
-    
+
+    /***
+     * Check if the game has to end due to:
+     * 1. a winning condition that is true;
+     * 2. or, a draw state, where all the cells are busy but no winning
+     * condition is satisfied
+     */
     private void checkEndGame() {
-        
+
         /* 
             Using Stream API find the first winning condition that match 
             the game state.
@@ -262,105 +264,131 @@ public class TTTBoard extends javax.swing.JFrame {
                     return checkLine(cells.get(0), cells.get(1), cells.get(2));
                 })
                 .findFirst();
-        
+
         /* If a winning condition has been found... */
         if (winningCondition.isPresent()) {
-            
+
             /* ...then we have a winner! */
             var unboxed = winningCondition.get();
             /* 
                 The winner is contained in a cell state, so if the cell state is
                 equals to PLAYER_X then 'X' won, otherwise 'O' won.
-            */
-            var winningPlayerState = (unboxed.get(0).getCellState().equals(TTTCell.State.PLAYER_X)) 
+             */
+            var winningPlayerState = (unboxed.get(0).getCellState().equals(TTTCell.State.PLAYER_X))
                     ? GameState.X_WON : GameState.O_WON;
-            
-            
+
             var gameEndEvent = new GameEndEvent(winningPlayerState, Optional.of(unboxed));
             fireGameEndEvent(gameEndEvent);
-            
+
             return;
         }
-        
+
         /* Otherwise, let's check if the game is in a draw state by checking all the cells */
-        
         var drawCondition = winningConditions.stream().flatMap(Collection::stream).allMatch((cell) -> {
             return !cell.getCellState().equals(TTTCell.State.INITIAL);
         });
-        
+
         /* If all the cell state are different from the INITIAL one... */
         if (drawCondition) {
             /* ... then the game ended with a DRAW! */
             var gameEndEvent = new GameEndEvent(GameState.DRAW, Optional.empty());
             fireGameEndEvent(gameEndEvent);
         }
-        
+
     }
-    
+
+    /**
+     * Emit the GameEnd event to all the components!
+     * @param evt 
+     */
     private void fireGameEndEvent(GameEndEvent evt) {
-      
-        Object[] listeners = gameEndEventListenerList.getListenerList();
-        for (int i = listeners.length - 2; i >= 0; i -= 2)  {
+
+        var listeners = gameEventListenerList.getListenerList();
+        
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == GameEndListener.class) {
                 ((GameEndListener) listeners[i + 1]).onGameEnd(evt);
             }
         }
-         
-     }
-    
+
+    }
+
     private boolean checkLine(TTTCell cell0, TTTCell cell1, TTTCell cell2) {
-        
-        if (cell0.getCellState().equals(TTTCell.State.INITIAL)) return false;
-        if (cell1.getCellState().equals(TTTCell.State.INITIAL)) return false;
-        if (cell2.getCellState().equals(TTTCell.State.INITIAL)) return false;        
-        
+
+        if (cell0.getCellState().equals(TTTCell.State.INITIAL)) {
+            return false;
+        }
+        if (cell1.getCellState().equals(TTTCell.State.INITIAL)) {
+            return false;
+        }
+        if (cell2.getCellState().equals(TTTCell.State.INITIAL)) {
+            return false;
+        }
+
         return (cell0.getCellState().equals(cell1.getCellState()) && cell1.getCellState().equals(cell2.getCellState()));
     }
-    
+
+    /***
+     * Add event listeners to components.
+     */
     private void initializeControllerAndBoard() {
-        
+
         /**
-         * As requested by the specification, all the cells must be
-         * register themselves to the VetoableChangeListener of TTTController.
+         * As requested by the specification, all the cells must be register
+         * themselves to the VetoableChangeListener of TTTController.
          */
-        var vetoChangeListenerController = tttController.getVetoCellStateChangeListener();
-        cell00.addCellStateChangeListener(vetoChangeListenerController);
-        cell01.addCellStateChangeListener(vetoChangeListenerController);
-        cell02.addCellStateChangeListener(vetoChangeListenerController);
+        cell00.addCellStateChangeListener(tttController);
+        cell01.addCellStateChangeListener(tttController);
+        cell02.addCellStateChangeListener(tttController);
 
-        cell10.addCellStateChangeListener(vetoChangeListenerController);
-        cell11.addCellStateChangeListener(vetoChangeListenerController);
-        cell12.addCellStateChangeListener(vetoChangeListenerController);
-        
-        cell20.addCellStateChangeListener(vetoChangeListenerController);
-        cell21.addCellStateChangeListener(vetoChangeListenerController);
-        cell22.addCellStateChangeListener(vetoChangeListenerController);
-        
-        
-        cell00.addCellStateChangeListener(this.cellStateChangeListener);
-        cell01.addCellStateChangeListener(this.cellStateChangeListener);
-        cell02.addCellStateChangeListener(this.cellStateChangeListener);
+        cell10.addCellStateChangeListener(tttController);
+        cell11.addCellStateChangeListener(tttController);
+        cell12.addCellStateChangeListener(tttController);
 
-        cell10.addCellStateChangeListener(this.cellStateChangeListener);
-        cell11.addCellStateChangeListener(this.cellStateChangeListener);
-        cell12.addCellStateChangeListener(this.cellStateChangeListener);
+        cell20.addCellStateChangeListener(tttController);
+        cell21.addCellStateChangeListener(tttController);
+        cell22.addCellStateChangeListener(tttController);
 
-        cell20.addCellStateChangeListener(this.cellStateChangeListener);
-        cell21.addCellStateChangeListener(this.cellStateChangeListener);
-        cell22.addCellStateChangeListener(this.cellStateChangeListener);
-        
-        addGameEndListener(cell00); addGameEndListener(cell01); addGameEndListener(cell02);
-        addGameEndListener(cell10); addGameEndListener(cell11); addGameEndListener(cell12);
-        addGameEndListener(cell20); addGameEndListener(cell21); addGameEndListener(cell22);
-        
+        cell00.addCellStateChangeListener(this);
+        cell01.addCellStateChangeListener(this);
+        cell02.addCellStateChangeListener(this);
+
+        cell10.addCellStateChangeListener(this);
+        cell11.addCellStateChangeListener(this);
+        cell12.addCellStateChangeListener(this);
+
+        cell20.addCellStateChangeListener(this);
+        cell21.addCellStateChangeListener(this);
+        cell22.addCellStateChangeListener(this);
+
+        addGameEndListener(cell00);
+        addGameEndListener(cell01);
+        addGameEndListener(cell02);
+        addGameEndListener(cell10);
+        addGameEndListener(cell11);
+        addGameEndListener(cell12);
+        addGameEndListener(cell20);
+        addGameEndListener(cell21);
+        addGameEndListener(cell22);
+
         addGameEndListener(tttController);
-        
-        addGameRestartListener(cell00); addGameRestartListener(cell01); addGameRestartListener(cell02);
-        addGameRestartListener(cell10); addGameRestartListener(cell11); addGameRestartListener(cell12);
-        addGameRestartListener(cell20); addGameRestartListener(cell21); addGameRestartListener(cell22);
-        
+
+        addGameRestartListener(cell00);
+        addGameRestartListener(cell01);
+        addGameRestartListener(cell02);
+        addGameRestartListener(cell10);
+        addGameRestartListener(cell11);
+        addGameRestartListener(cell12);
+        addGameRestartListener(cell20);
+        addGameRestartListener(cell21);
+        addGameRestartListener(cell22);
+
         addGameRestartListener(tttController);
     }
-    
-    
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        checkEndGame();
+    }
+
 }
