@@ -12,7 +12,7 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>/Users/gabryon/NetBeansProjects/ap_second_assignment/src/main/java</exec.appArgs>
+                <exec.appArgs>//Users/gabryon/University/AP-2021-22/advanced-programming-2122/ap_second_assignment/src/main/java</exec.appArgs>
                 <exec.mainClass>me.gabryon.ap_second_assignment.TestAlgsPlus</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
@@ -29,7 +29,7 @@
             <properties>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>/Users/gabryon/NetBeansProjects/ap_second_assignment/src/main/java</exec.appArgs>
+                <exec.appArgs>//Users/gabryon/University/AP-2021-22/advanced-programming-2122/ap_second_assignment/src/main/java</exec.appArgs>
                 <exec.mainClass>me.gabryon.ap_second_assignment.TestAlgsPlus</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
@@ -49,7 +49,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>me.gabryon.ap_second_assignment.TestAlgsPlus</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>/Users/gabryon/NetBeansProjects/ap_second_assignment/src/main/java</exec.appArgs>
+                <exec.appArgs>//Users/gabryon/University/AP-2021-22/advanced-programming-2122/ap_second_assignment/src/main/java</exec.appArgs>
             </properties>
         </action>
     </actions>
