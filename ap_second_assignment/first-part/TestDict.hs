@@ -8,7 +8,7 @@ lower :: [Char] -> String
 lower = map toLower
 
 -- Two dictionaries have the same key set if their difference is empty.
--- Each set does not have a duplicate key, since the given dictionaries are well-formed.
+-- Since the given dictionaries are well-formed, each set does not have a duplicate key
 sameKeys :: Eq a => Dictionary a b1 -> Dictionary a b2 -> Bool
 sameKeys d1 d2 = null (keys d1 \\ keys d2)
 
@@ -47,14 +47,14 @@ writeDict d1 filename = do
 --  c. Finally, using writeDict it writes dictionaries d1 and d4 to files anag- out.txt and gana-out.txt, respectively.
 main :: IO ()
 main = do
-    -- Initially, read dictionaries from auxiliar files.
+    -- Initially, crate dictionaries reading words from the given auxiliar files.
     d1 <- readDict "./aux_files/anagram.txt"
     d2 <- readDict "./aux_files/anagram-s1.txt"
     d3 <- readDict "./aux_files/anagram-s2.txt"
     d4 <- readDict "./aux_files/margana2.txt"
-    -- Print: Dictionaries d1 and d4 are not equal, but they have the same keys (ignoring the ordering);
+    -- Prints: Dictionaries d1 and d4 are not equal, but they have the same keys (ignoring the ordering);
     printf "d1 /= d4: %s, same keys: %s\n" (show (d1 /= d4)) (show (sameKeys d1 d4))
-    -- Print: Dictionary d1 is equal to the merge of dictionaries d2 and d3;
+    -- Prints: Dictionary d1 is equal to the merge of dictionaries d2 and d3;
     printf "d1 == (d2 ∪ d3): %s\n" (show (d1 == merge d2 d3))
     -- Finally, write d1 and d4 to the respective files.
     writeDict d1 "./anag-out.txt"
