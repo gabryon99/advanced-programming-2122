@@ -134,7 +134,7 @@ if __name__ == "__main__":
     pass
 
 # =======================================================================================================
-# | Final Toughts                                                                                       |
+# | Final Thoughts                                                                                       |
 # =======================================================================================================
 # | After several tests, I can say the claim stated during the lesson is true.                          |
 # | Executing the function in a multi-thread environment doesn't change the running time                |
