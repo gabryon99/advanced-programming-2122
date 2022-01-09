@@ -1,4 +1,5 @@
-import functools, math, logging, json
+import functools, math, logging, json, requests
+
 from threading import Thread
 from time import perf_counter, sleep
 from statistics import mean, variance
@@ -70,6 +71,10 @@ def grezzo(n):
     for _ in range (2 ** n):
         pass
 
+def spam_get_reqs(n, url):
+    for _ in range(n):
+        _ = requests.get(url)
+
 def exp_by_squaring(x, n):
     if n < 0:
         x = 1 / x
@@ -109,7 +114,9 @@ def test(iter, fun, *args):
         # Decore the function `fun` using the new created bench
         decorated_fun = new_bench(fun)
 
-        # Create a new json file using the function name and the given bench paramaters.
+        # Create a new JSON file using the function name and the given bench paramaters.
+        # JSON serialization is used because it allows to load the computed data
+        # into scripts in easy way.
         filename = f"{fun.__name__}_{args}_{n_threads}_{seq_iter}.json"
 
         # Write the file in the same directory where the program is executed
@@ -126,21 +133,33 @@ def test(iter, fun, *args):
 
 
 if __name__ == "__main__":
+    
+    # Show INFO logs
     logging.basicConfig(level=logging.INFO)
+
     try:
-        test(1000, grezzo, 16)
+        # test(1, spam_get_reqs, 2, "https://google.com") # IO-bound
+        test(1000, grezzo, 16) # CPU-bound
     except KeyboardInterrupt:
-        logging.info("Terminating test utility.")
+        logging.info("Terminating test utility...")
     pass
 
 # =======================================================================================================
-# | Final Thoughts                                                                                       |
+# | Final Thoughts                                                                                      |
 # =======================================================================================================
-# | After several tests, I can say the claim stated during the lesson is true.                          |
-# | Executing the function in a multi-thread environment doesn't change the running time                |
-# | of the execution. We can see from the collected data that there is no gain at all                   |
-# | when running the function in parallel, the single-thread execution performs (more or less)          |
-# | identical to the one with 8 threads. Therefore, the Python Global Interepreter Lock acts as a       |
+# | "Two threads calling a function may take twice as much time as a single thread calling the          |
+# | function twice".                                                                                    |
+# |                                                                                                     |
+# | After several tests, I can say the claim stated during the lesson is true for CPU-bound tasks.      |
+# | Executing multiple CPU-bound tasks in a multi-thread environment doesn't change the running time    |
+# | of the execution. We can see from the collected data, there is no time gain at all                  |
+# | when running the function in "parallel"; the single-thread execution performs (more or less)        |
+# | identical to the one with many threads. Therefore, the Python Global Interpreter Lock acts as a     |
 # | bottleneck for multi-thread applications.                                                           |
-# | The benchmark was executed on a Intel Core i7 2,6 GHz 6-Core                                        |                                       
+# |                                                                                                     |
+# | For IO-bound tasks (see `spam_get_reqs` for example), a multi-thread environment helps to reduce    |
+# | time for jobs completion. So, the claim is not true for IO-bound tasks as we can see from the tests.|
+# |                                                                                                     |
+# | The benchmark ran on a Macbook Pro with an Intel Core i7 2,6 GHz 6-Core CPU, without any application|
+# | open in background (except for the system ones).                                                    |                                       
 # =======================================================================================================
